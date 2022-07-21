@@ -204,7 +204,11 @@ def issuechecker(resp):
    handler.write(img_data)
   with open('captcha.png', "rb") as image_file:
    encoded_string = base64.b64encode(image_file.read())
-  data = { 'userid':'hoanghaianh', 'apikey':'5JzPnvYKF7iyHGIBYBXG', 'data': str(encoded_string)[2:-1], 'case': 'mixed'}
+  data = {
+   'userid': random.choice(['hoanghaianh', 'ahihiyou20']),
+   'apikey': '5JzPnvYKF7iyHGIBYBXG' if 'userid' == 'hoanghaianh' else 'EylMgbLUe0v4Jxi69fTN',
+   'data': str(encoded_string)[2:-1],
+   'case': 'mixed'}
   r = requests.post(url = 'https://api.apitruecaptcha.org/one/gettext', json = data)
   j = json.loads(r.text)
   print(f"{client.color.okcyan}[INFO] {client.color.reset}Solved Captcha [Code: {j['result']}]")
@@ -214,33 +218,33 @@ def issuechecker(resp):
    if m['channel_id'] == client.channel or m['channel_id'] == dmsid and client.stopped != True:
     if m['author']['id'] == '408785106942164992' or m['author']['username'] == 'OwO' or m['author']['discriminator'] == '8456' or m['author']['public_flags'] == '65536':
      if 'solving the captcha' in m['content'].lower():
-       print(f'{at()}{client.color.warning} !! [CAPTCHA] !! {client.color.reset} CAPTCHA   ACTION REQUİRED')
+       print(f'{at()}{client.color.warning} !! [CAPTCHA] !! {client.color.reset} ACTION REQUİRED')
        if client.solve.lower() != "no":
          solve(m['attachments'][0]['url'])
        return "captcha"
      if 'banned' in m['content'].lower():
-       print(f'{at()}{client.color.fail} !!! [BANNED] !!! {client.color.reset} your account have been banned from owo bot please open a issue on the Support Discord server')
+       print(f'{at()}{client.color.fail} !!! [BANNED] !!! {client.color.reset} Your Account Have Been Banned From OwO Bot Please Open An Issue On The Support Discord server')
        return "captcha"
      if 'are you a real human'  in m['content'].lower():
-       print(f'{at()}{client.color.warning} !! [CAPTCHA] !! {client.color.reset} CAPTCHA   ACTION REQUİRED')
+       print(f'{at()}{client.color.warning} !! [CAPTCHA] !! {client.color.reset} ACTION REQUİRED')
        if client.solve.lower() != "no":
          solve(m['attachments'][0]['url'])
        return "captcha"
  def change_channel():
-        if client.change.lower() == "yes":
-          client.channel2 = []
-          guild = bot.gateway.session.guild(m['guild_id']).channels
-          channel = guild.keys()
-          channel2 = random.choice(list(channel))
-          try:
-           if guild[channel2]['type'] == "guild_text":
-             client.channel2.append(channel2)
-             client.channel2.append(guild[channel2]['name'])
-           else:
-             change_channel()
-          except RecursionError:
-             client.channel2.append(channel2)
-             client.channel2.append(guild[channel2]['name'])
+    if client.change.lower() == "yes":
+      client.channel2 = []
+      guild = bot.gateway.session.guild(m['guild_id']).channels
+      channel = guild.keys()
+      channel2 = random.choice(list(channel))
+      try:
+       if guild[channel2]['type'] == "guild_text":
+        client.channel2.append(channel2)
+        client.channel2.append(guild[channel2]['name'])
+       else:
+        change_channel()
+      except RecursionError:
+        client.channel2.append(channel2)
+        client.channel2.append(guild[channel2]['name'])
  change_channel()
 def runner():
         global wbm
