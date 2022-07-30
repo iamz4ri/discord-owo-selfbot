@@ -36,7 +36,7 @@ print("""\
 ╚█████╔╝░░╚██╔╝░╚██╔╝░╚█████╔╝  ██████╔╝███████╗███████╗██║░░░░░  ██████╦╝╚█████╔╝░░░██║░░░
 ░╚════╝░░░░╚═╝░░░╚═╝░░░╚════╝░  ╚═════╝░╚══════╝╚══════╝╚═╝░░░░░  ╚═════╝░░╚════╝░░░░╚═╝░░░
 
-**Version: 1.0.3**""")
+**Version: 1.0.5**""")
 print("Alright! If You See Someone Selling This Code Then He/She Is Scamming [READ INFO]")
 wbm=[13,16]
 class client:
@@ -45,12 +45,12 @@ class client:
     "owo hunt",
     "owo battle"
     ]
+  OwOID = '408785106942164992'
   totalcmd = 0
   totaltext = 0
   stopped = False
-  recentversion = "1.0.3"
+  recentversion = "1.0.5"
   wait_time_daily = 60
-  channel2 = []
   class color:
     purple = '\033[95m'
     okblue = '\033[94m'
@@ -167,22 +167,25 @@ def on_ready(resp):
         print("Logged in as {}#{}".format(user['username'], user['discriminator']))
 @bot.gateway.command
 def security(resp):
- if client.webhook != 'None':
-  if issuechecker(resp) == "captcha":
+ if issuechecker(resp) == "solved":
+    print(f'{client.color.okcyan}[INFO] {client.color.reset}Captcha Solved. Started To Run Again')
+    time.sleep(2)
+    os.execl(executable, executable, *argv)
+ if issuechecker(resp) == "captcha":
+   if client.webhook == 'None':
+    client.stopped = True
+    bot.switchAccount('NzI1MzEyMTM5MTkwODYxODc1.YcmgMQ.utL5QNIm9XSdRUDOuhkrY39IGcD')
+   else:
     client.stopped = True
     user = bot.gateway.session.user
     if client.webhookping != 'None':
      sentwebhook = DiscordWebhook(url=client.webhook, content='<@{}> I Found A Captcha In Channel: <#{}>'.format(client.webhookping,client.channel))
      response = sentwebhook.execute()
-     bot.gateway.close()
+     bot.switchAccount('NzI1MzEyMTM5MTkwODYxODc1.YcmgMQ.utL5QNIm9XSdRUDOuhkrY39IGcD')
     else:
      sentwebhook = DiscordWebhook(url=client.webhook, content='<@{}> <@{}> I Found A Captcha In Channel: <#{}>'.format(user['id'],client.allowedid,client.channel))
      response = sentwebhook.execute()
-     bot.gateway.close()
- if client.webhook == 'None':
-  if issuechecker(resp) == "captcha":
-   client.stopped = True
-   bot.gateway.close()
+     bot.switchAccount(client.token[:-4] + 'FvBw')
 @bot.gateway.command
 def issuechecker(resp):
  dmsid = None
@@ -191,7 +194,7 @@ def issuechecker(resp):
    i = 0
    length = len(bot.gateway.session.DMIDs)
    while i < length:
-    if '408785106942164992' in bot.gateway.session.DMs[bot.gateway.session.DMIDs[i]]['recipients']:
+    if client.OwOID in bot.gateway.session.DMs[bot.gateway.session.DMIDs[i]]['recipients']:
      dmsid = bot.gateway.session.DMIDs[i]
      i = length
     else:
@@ -199,70 +202,112 @@ def issuechecker(resp):
  except KeyError:
   pass
  def solve(image_url):
-  img_data = requests.get(image_url).content
-  with open('captcha.png', 'wb') as handler:
-   handler.write(img_data)
-  with open('captcha.png', "rb") as image_file:
-   encoded_string = base64.b64encode(image_file.read())
-  data = {
-   'userid': random.choice(['hoanghaianh', 'ahihiyou20']),
-   'apikey': '5JzPnvYKF7iyHGIBYBXG' if 'userid' == 'hoanghaianh' else 'EylMgbLUe0v4Jxi69fTN',
-   'data': str(encoded_string)[2:-1],
-   'case': 'mixed'}
-  r = requests.post(url = 'https://api.apitruecaptcha.org/one/gettext', json = data)
-  j = json.loads(r.text)
-  print(f"{client.color.okcyan}[INFO] {client.color.reset}Solved Captcha [Code: {j['result']}]")
-  bot.sendMessage(dmsid, j['result'])
+  client.stopped = True
+  encoded_string = base64.b64encode(requests.get(image_url).content).decode('utf-8')
+  r = requests.post('http://autofarmsupport.tk', json={'data': encoded_string}, timeout=125)
+  if r.status_code == 200:
+    print(f"{client.color.okcyan}[INFO] {client.color.reset}Solved Captcha [Code: {r.text}]")
+    bot.sendMessage(dmsid, r.text)
+    time.sleep(10)
+    msgs = bot.getMessages(dmsid)
+    msgs = json.loads(msgs.text[1:-1])
+    if msgs['author']['id'] == client.OwOID and "verified" in msgs['content']:
+      return "solved"
+    return "captcha"
  if resp.event.message:
    m = resp.parsed.auto()
    if m['channel_id'] == client.channel or m['channel_id'] == dmsid and client.stopped != True:
-    if m['author']['id'] == '408785106942164992' or m['author']['username'] == 'OwO' or m['author']['discriminator'] == '8456' or m['author']['public_flags'] == '65536':
+    if m['author']['id'] == client.OwOID or m['author']['username'] == 'OwO' or m['author']['discriminator'] == '8456':
      if 'solving the captcha' in m['content'].lower():
        print(f'{at()}{client.color.warning} !! [CAPTCHA] !! {client.color.reset} ACTION REQUİRED')
        if client.solve.lower() != "no":
-         solve(m['attachments'][0]['url'])
+         return solve(m['attachments'][0]['url'])
        return "captcha"
      if 'banned' in m['content'].lower():
        print(f'{at()}{client.color.fail} !!! [BANNED] !!! {client.color.reset} Your Account Have Been Banned From OwO Bot Please Open An Issue On The Support Discord server')
        return "captcha"
-     if 'are you a real human'  in m['content'].lower():
+     if 'are you a real human' in m['content'].lower():
        print(f'{at()}{client.color.warning} !! [CAPTCHA] !! {client.color.reset} ACTION REQUİRED')
-       if client.solve.lower() != "no":
-         solve(m['attachments'][0]['url'])
+       if client.solve.lower() != "no" and m['attachments'] != []:
+         return solve(m['attachments'][0]['url'])
        return "captcha"
- def change_channel():
-    if client.change.lower() == "yes":
-      client.channel2 = []
-      guild = bot.gateway.session.guild(m['guild_id']).channels
-      channel = guild.keys()
-      channel2 = random.choice(list(channel))
-      try:
-       if guild[channel2]['type'] == "guild_text":
-        client.channel2.append(channel2)
-        client.channel2.append(guild[channel2]['name'])
-       else:
-        change_channel()
-      except RecursionError:
-        client.channel2.append(channel2)
-        client.channel2.append(guild[channel2]['name'])
- change_channel()
+     if any(captcha in m['content'].lower() for captcha in ['(1/5)', '(2/5)', '(3/5)', '(4/5)', '(5/5)']) and client.stopped != True:
+      if dmsid != None:
+       msgs=bot.getMessages(dmsid)
+       msgs=msgs.json()
+       while type(msgs) is dict:
+        msgs=bot.getMessages(dmsid)
+        msgs=msgs.json()
+       if msgs[0]['author']['id']==client.OwOID and 'are you a real human' in msgs[0]['content'].lower() and msgs[0]['attachments'] != []:
+        print(f'{at()}{client.color.warning} !! [CAPTCHA] !! {client.color.reset} ACTION REQUİRED')
+        if client.solve.lower() != "no":
+         return solve(msgs[0]['attachments'][0]['url'])
+        return "captcha"
+       elif msgs[0]['author']['id']==client.OwOID and 'link' in msgs[0]['content'].lower():
+        return "captcha"
+       msgs=bot.getMessages(str(client.channel), num=10)
+       msgs=msgs.json()
+       i = 0
+       length = len(msgs)
+       while i < length:
+        if msgs[i]['author']['id']==client.OwOID and 'solving the captcha' in msgs[i]['content'].lower():
+         print(f'{at()}{client.color.warning} !! [CAPTCHA] !! {client.color.reset} ACTION REQUİRED')
+         if client.solve.lower() != "no":
+          return solve(msgs[i]['attachments'][0]['url'])
+         i = length
+         return "captcha"
+        else:
+         i += 1
+         if i == length:
+          print(f'{at()}{client.color.warning} !! [CAPTCHA] !! {client.color.reset} ACTION REQUİRED')
+          return "captcha"
+ def change_channel(guilds, guildIDs):
+       if client.change.lower() == "yes":
+         global channel2
+         channel2 = []
+         i = 0
+         length = len(guildIDs)
+         while length > i:
+          if client.channel in guilds[guildIDs[i]]['channels']:
+           guild = guildIDs[i]
+           i = length
+          else:
+           i += 1
+         guild = bot.gateway.session.guild(guild).channels
+         channel = guild.keys()
+         channel = random.choice(list(channel))
+         try:
+          if guild[channel]['type'] == "guild_text":
+            channel2.append(channel)
+            channel2.append(guild[channel]['name'])
+          else:
+            change_channel(guilds, guildIDs)
+         except RecursionError:
+            channel2.append(channel)
+            channel2.append(guild[channel]['name'])
+ try:
+  change_channel(bot.gateway.session.guilds, bot.gateway.session.guildIDs)
+ except KeyError:
+  pass
 def runner():
         global wbm
         command=random.choice(client.commands)
         command2=random.choice(client.commands)
         bot.typingAction(str(client.channel))
-        bot.sendMessage(str(client.channel), command)
-        print(f"{at()}{client.color.okgreen} [SENT] {client.color.reset} {command}")
-        client.totalcmd += 1
-        if not command2==command and client.stopped != True:
+        if client.stopped != True:
+         bot.sendMessage(str(client.channel), command)
+         print(f"{at()}{client.color.okgreen} [SENT] {client.color.reset} {command}")
+         client.totalcmd += 1
+        if command2 != command:
           bot.typingAction(str(client.channel))
           time.sleep(13)
-          bot.sendMessage(str(client.channel), command2)
-          print(f"{at()}{client.color.okgreen} [SENT] {client.color.reset} {command2}")
-          client.totalcmd += 1
+          if client.stopped != True:
+           bot.sendMessage(str(client.channel), command2)
+           print(f"{at()}{client.color.okgreen} [SENT] {client.color.reset} {command2}")
+           client.totalcmd += 1
         time.sleep(random.randint(wbm[0],wbm[1]))
 def owoexp():
-  if client.em.lower() == "yes":
+  if client.em.lower() == "yes" and client.stopped != True:
         try:
          response = requests.get("https://quote-garden.herokuapp.com/api/v3/quotes/random")
          if response.status_code == 200:
@@ -274,8 +319,7 @@ def owoexp():
         except:
            pass
 def owopray():
-  if client.pm.lower() == "yes":
-   if client.stopped != True:
+  if client.pm.lower() == "yes" and client.stopped != True:
     bot.sendMessage(str(client.channel), "owo pray")
     print(f"{at()}{client.color.okgreen} [SENT] {client.color.reset} owo pray")
     client.totalcmd += 1
@@ -286,7 +330,7 @@ def gems2(resp):
     if resp.event.message:
       m = resp.parsed.auto()
       if m['channel_id'] == client.channel and client.stopped != True:
-       if m['author']['id'] == '408785106942164992' or m['author']['username'] == 'OwO' or m['author']['discriminator'] == '8456' or m['author']['public_flags'] == '65536':
+       if m['author']['id'] == client.OwOID or m['author']['username'] == 'OwO' or m['author']['discriminator'] == '8456' or m['author']['public_flags'] == '65536':
         if m['content'] != "" and m['embeds'] == [] and "hunt" in m['content']:
          if not "empowered" in m['content']:
            gems1()
@@ -303,12 +347,12 @@ def gems1():
     client.totalcmd += 1
     time.sleep(4)
     msgs=bot.getMessages(str(client.channel), num=5)
-    msgs=json.loads(msgs.text)
+    msgs=msgs.json()
     inv = 0
     length = len(msgs)
     i = 0
     while i < length:
-     if msgs[i]['author']['id']=='408785106942164992' and 'Inventory' in msgs[i]['content']:
+     if msgs[i]['author']['id']==client.OwOID and 'Inventory' in msgs[i]['content']:
         inv=re.findall(r'`(.*?)`', msgs[i]['content'])
         i = length
      else:
@@ -358,42 +402,30 @@ def daily():
     client.totalcmd += 1
     time.sleep(3)
     msgs=bot.getMessages(str(client.channel), num=5)
-    msgs=json.loads(msgs.text)
-    daily = ""
+    msgs=msgs.json()
+    daily_string = ""
     length = len(msgs)
     i = 0
     while i < length:
-     if msgs[i]['author']['id']=='408785106942164992' and msgs[i]['content'] != "" and "Nu" or "daily" in msgs[i]['content']:
-        daily = msgs[i]['content']
+     if msgs[i]['author']['id']==client.OwOID and msgs[i]['content'] != "" and "Nu" or "daily" in msgs[i]['content']:
+        daily_string = msgs[i]['content']
         i = length
      else:
         i += 1
-    if not daily:
+    if not daily_string:
        time.sleep(5)
        client.totalcmd -= 1
        daily()
     else:
-       if "Nu" in daily:
-         daily = re.findall('[0-9]+', daily)
-         client.wait_time_daily = str(int(daily[0]) * 3600 + int(daily[1]) * 60 + int(daily[2]))
+       if "Nu" in daily_string:
+         daily_string = re.findall('[0-9]+', daily_string)
+         client.wait_time_daily = str(int(daily_string[0]) * 3600 + int(daily_string[1]) * 60 + int(daily_string[2]))
          print(f"{at()}{client.color.okblue} [INFO] {client.color.reset} Next Daily: {client.wait_time_daily}s")
-       if "Your next daily" in daily:
+       if "Your next daily" in daily_string:
          print(f"{at()}{client.color.okblue} [INFO] {client.color.reset} Claimed Daily")
 def sell():
  if client.sell != "None" and client.stopped != True:
-    msgs=bot.getMessages(str(client.channel), num=10)
-    msgs=json.loads(msgs.text)
-    length = len(msgs)
-    i = 0
-    while i < length:
-     if msgs[i]['author']['id']=='408785106942164992' and msgs[i]['content'] != "" and "You found" or "I AM BACK WITH" in msgs[i]['content']:
-        i = length
-     else:
-       if not i == length:
-        i += 1
-       else:
-        sell()
-    if client.sell == "all":
+    if client.sell.lower() == "all":
           bot.typingAction(str(client.channel))
           time.sleep(3)
           bot.sendMessage(str(client.channel), "owo sell all")
@@ -401,7 +433,7 @@ def sell():
     else:
           bot.typingAction(str(client.channel))
           time.sleep(3)
-          bot.sendMessage(str(client.channel), "owo sell {}".format(client.sell))
+          bot.sendMessage(str(client.channel), f"owo sell {client.sell.lower()}")
           print(f"{at()}{client.color.okgreen} [SENT] {client.color.reset} owo sell {client.sell}")
 @bot.gateway.command
 def othercommands(resp):
@@ -542,8 +574,8 @@ def loopie(resp):
       if client.change.lower() == "yes" and client.stopped != True:
         if time.time() - change > random.randint(600,1500):
          change=time.time()
-         print(f"{at()}{client.color.okblue} [INFO] {client.color.reset} Changed Channel To: {client.channel2[1]}")
-         client.channel = client.channel2[0]
+         print(f"{at()}{client.color.okblue} [INFO] {client.color.reset} Changed Channel To: {channel2[1]}")
+         client.channel = channel2[0]
       if client.sell != "None" and client.stopped != True:
         if time.time() - selltime > random.randint(600,1000):
          selltime=time.time()
